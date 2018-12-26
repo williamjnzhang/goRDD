@@ -10,7 +10,7 @@ func main() {
 	for i := 0; i < 9; i++ {
 		a = append(a, i)
 	}
-	rdd := BuildRdd(a)
+	rdd := BuildRddNThread(a, 10)
 	
 	rdd.Foreach(Print_func)
 
