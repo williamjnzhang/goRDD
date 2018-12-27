@@ -45,3 +45,36 @@ func agg(rdd Rdd, zeroval CombinedType, sOp seqOp, cOp combOp, ochan chan Combin
 	ochan <- ret
 	return
 }
+
+type reduce_func func (OriginType, OriginType) OriginType
+func (rdd Rdd) Reduce(rf reduce_func) OriginType {
+	rddsize := rdd.Count()
+	nt := getNthread(rddsize, n_thread)
+	batchSize := rddsize / nt
+	var ochan chan OriginType = make(chan OriginType, nt)
+	defer close(ochan)
+	begin := 0
+	for begin < rddsize {
+		end := begin + batchSize
+		if end > rddsize {
+			end = rddsize
+		}
+		go red(rdd[begin:end], rf, ochan)
+		begin += batchSize
+	}
+	ret := <- ochan
+	for i := 1; i < nt; i++ {
+		ret = rf(ret, <-ochan)
+	}
+	return ret
+}
+
+func red(rdd Rdd, rf reduce_func, ochan chan OriginType) {
+	rddsize := rdd.Count()
+	ret := rdd[0]
+	for i := 1; i < rddsize; i++ {
+		ret = rf(ret, rdd[i])
+	}
+	ochan <- ret
+	return
+}
