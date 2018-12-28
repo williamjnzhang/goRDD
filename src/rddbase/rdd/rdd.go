@@ -85,15 +85,15 @@ func (rdd Rdd) Count() int {
 	return len(rdd)
 }
 
-type foreach_func func(RddRow)
-func (rdd Rdd) Foreach(ff foreach_func) {
+type Foreach_func func(RddRow)
+func (rdd Rdd) Foreach(ff Foreach_func) {
 	for _, row := range rdd {
 		ff(row)
 	}
 }
 
-type map_func func(RddRow) RddRow
-func (rdd Rdd) Map(mf map_func) Rdd {
+type Map_func func(RddRow) RddRow
+func (rdd Rdd) Map(mf Map_func) Rdd {
 	rddsize := rdd.Count()
 	newRdd := make(Rdd, rddsize, rddsize)
 	nt := getNthread(rddsize, n_thread)
@@ -119,8 +119,8 @@ func (rdd Rdd) Map(mf map_func) Rdd {
 	return newRdd
 }
 
-type filter_func func(RddRow) bool
-func (rdd Rdd) Filter(ff filter_func) Rdd {
+type Filter_func func(RddRow) bool
+func (rdd Rdd) Filter(ff Filter_func) Rdd {
 	rddsize := rdd.Count()
 	nt := getNthread(rddsize, n_thread)
 	batchSize := rddsize / nt
