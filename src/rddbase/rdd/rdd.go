@@ -154,3 +154,45 @@ func (rdd Rdd) Filter(ff Filter_func) Rdd {
 func (rdd Rdd) First() interface{} {
 	return rdd[0]
 }
+
+type SliceArray interface{}
+type FlatMap_func func(RddRow) SliceArray
+func (rdd Rdd) FlatMap(ff FlatMap_func) Rdd {
+	rddsize := rdd.Count()
+	nt := getNthread(rddsize, n_thread)
+	batchSize := rddsize / nt
+	var ochan chan Rdd = make(chan Rdd, nt)
+	defer close(ochan)
+	begin := 0
+	for begin < rddsize {
+		end := begin + batchSize
+		if end > rddsize {
+			end = rddsize
+		}
+		go flatmap(rdd[begin:end], ff, ochan)
+		begin += batchSize
+	}
+	ret := <- ochan
+	for i := 1; i < nt; i++ {
+		ret = append(ret, <-ochan ...)
+	}
+	return ret
+}
+
+func flatmap(rdd Rdd, ff FlatMap_func, ochan chan Rdd) {
+	ret := make(Rdd, 0)
+	for _, row := range rdd {
+		fv := ff(row)
+		v := reflect.ValueOf(fv)
+		switch v.Kind(){
+		case reflect.Slice, reflect.Array:
+			for i := 0; i < v.Len(); i++ {
+				ret = append(ret, v.Index(i).Interface())
+			}
+		default:
+			panic("The return type of FlatMap_func must be a Slice or an Array!")
+		}
+	}
+	ochan <- ret
+	return
+}
