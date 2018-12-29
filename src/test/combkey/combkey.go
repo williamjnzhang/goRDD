@@ -20,7 +20,10 @@ func main() {
 		c2v := c2.([]int)
 		return append(c1v, c2v...)
 	}
-	rdd := BuildRddNThread(a, 10)
-	rdd = rdd.CombineByKey(ccombfunc, mvalfunc, mcombfunc, nil)
-	rdd.Foreach(Print_func)
+	originrdd := BuildRddNThread(a, 10)
+	rdd := originrdd.CombineByKey(ccombfunc, mvalfunc, mcombfunc, nil)
+	rdd.Foreach(Print)
+	rdd = originrdd.AggregateByKey([]int{}, mvalfunc, mcombfunc, nil)
+	rdd.Foreach(Print)
+	
 }

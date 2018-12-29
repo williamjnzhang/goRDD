@@ -195,3 +195,22 @@ func comb_key(rdd Rdd, ccombfunc CreateCombiner, mvalfunc MergeValue, mcombfunc 
 	ochan <- ret
 	return
 }
+
+
+// func (rdd Rdd) ReduceByKey(rf Reduce_func, pf Partition_func) Rdd {
+// 	return rdd.CombineByKey(
+// 		func(o OriginType) CombinedType{return o},
+// 		reflect.ValueOf(rf).Interface().(MergeValue),
+// 		reflect.ValueOf(rf).Interface().(MergeCombiners),
+// 		pf,
+// 	)
+// }
+
+func (rdd Rdd) AggregateByKey(zeroval CombinedType, sOp SeqOp, cOp CombOp, pf Partition_func) Rdd {
+	return rdd.CombineByKey(
+		func(o OriginType) CombinedType {return sOp(zeroval, o)},
+		sOp,
+		cOp,
+		pf,
+	)
+}
