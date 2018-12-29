@@ -25,5 +25,6 @@ func main() {
 	rdd.Foreach(Print)
 	rdd = originrdd.AggregateByKey([]int{}, mvalfunc, mcombfunc, nil)
 	rdd.Foreach(Print)
-	
+	rdd = originrdd.ReduceByKey(Add, nil)
+	rdd.Foreach(Print)
 }

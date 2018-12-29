@@ -196,15 +196,22 @@ func comb_key(rdd Rdd, ccombfunc CreateCombiner, mvalfunc MergeValue, mcombfunc 
 	return
 }
 
+func (rf Reduce_func) toMergeValue(c CombinedType, o OriginType) CombinedType {
+	return rf(c, o)
+}
 
-// func (rdd Rdd) ReduceByKey(rf Reduce_func, pf Partition_func) Rdd {
-// 	return rdd.CombineByKey(
-// 		func(o OriginType) CombinedType{return o},
-// 		reflect.ValueOf(rf).Interface().(MergeValue),
-// 		reflect.ValueOf(rf).Interface().(MergeCombiners),
-// 		pf,
-// 	)
-// }
+func (rf Reduce_func) toMergeCombiners(c1 CombinedType, c2 CombinedType) CombinedType {
+	return rf(c1, c2)
+}
+
+func (rdd Rdd) ReduceByKey(rf Reduce_func, pf Partition_func) Rdd {
+	return rdd.CombineByKey(
+		func(o OriginType) CombinedType{return o},
+		rf.toMergeValue,
+		rf.toMergeCombiners,
+		pf,
+	)
+}
 
 func (rdd Rdd) AggregateByKey(zeroval CombinedType, sOp SeqOp, cOp CombOp, pf Partition_func) Rdd {
 	return rdd.CombineByKey(
