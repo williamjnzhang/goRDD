@@ -1,8 +1,8 @@
 package main
 
 import (
-	"rddbase/rdd"
-	"rddbase/functions"
+	"github.com/williamjnzhang/goRDD"
+	"github.com/williamjnzhang/goRDD/functions"
 )
 
 func main() {

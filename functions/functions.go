@@ -2,7 +2,7 @@ package functions
 
 import (
 	"fmt"
-	"rddbase/rdd"
+	"github.com/williamjnzhang/goRDD"
 	"reflect"
 )
 
