@@ -95,6 +95,9 @@ func (rdd Rdd) Foreach(ff Foreach_func) {
 type Map_func func(RddRow) RddRow
 func (rdd Rdd) Map(mf Map_func) Rdd {
 	rddsize := rdd.Count()
+	if rddsize <= 0 {
+		return rdd
+	}
 	newRdd := make(Rdd, rddsize, rddsize)
 	nt := getNthread(rddsize, n_thread)
 	batchSize := rddsize / nt
@@ -122,6 +125,9 @@ func (rdd Rdd) Map(mf Map_func) Rdd {
 type Filter_func func(RddRow) bool
 func (rdd Rdd) Filter(ff Filter_func) Rdd {
 	rddsize := rdd.Count()
+	if rddsize <= 0 {
+		return rdd
+	}
 	nt := getNthread(rddsize, n_thread)
 	batchSize := rddsize / nt
 	var rddchan chan Rdd = make(chan Rdd, nt)
@@ -159,6 +165,9 @@ type SliceArray interface{}
 type FlatMap_func func(RddRow) SliceArray
 func (rdd Rdd) FlatMap(ff FlatMap_func) Rdd {
 	rddsize := rdd.Count()
+	if rddsize <= 0 {
+		return rdd
+	}
 	nt := getNthread(rddsize, n_thread)
 	batchSize := rddsize / nt
 	var ochan chan Rdd = make(chan Rdd, nt)

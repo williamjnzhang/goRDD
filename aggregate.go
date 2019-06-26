@@ -11,6 +11,9 @@ type SeqOp func(CombinedType, OriginType) CombinedType
 type CombOp func(CombinedType, CombinedType) CombinedType
 func (rdd Rdd) Aggregate(zeroval CombinedType, sOp SeqOp, cOp CombOp) CombinedType {
 	rddsize := rdd.Count()
+	if rddsize <= 0 {
+		return zeroval
+	}
 	nt := getNthread(rddsize, n_thread)
 	batchSize := rddsize / nt
 	var ochan chan CombinedType = make(chan CombinedType, nt)
@@ -34,6 +37,10 @@ func (rdd Rdd) Aggregate(zeroval CombinedType, sOp SeqOp, cOp CombOp) CombinedTy
 func agg(rdd Rdd, zeroval CombinedType, sOp SeqOp, cOp CombOp, ochan chan CombinedType) {
 	// first round
 	rddsize := rdd.Count()
+	if rddsize <= 0 {
+		ochan <- zeroval
+		return
+	}
 	rrdd := make(Rdd, rddsize, rddsize)
 	for idx, row := range rdd {
 		rrdd[idx] = sOp(zeroval, row)
@@ -91,6 +98,9 @@ func agg(rdd Rdd, zeroval CombinedType, sOp SeqOp, cOp CombOp, ochan chan Combin
 type Reduce_func func (OriginType, OriginType) OriginType
 func (rdd Rdd) Reduce(rf Reduce_func) OriginType {
 	rddsize := rdd.Count()
+	if rddsize <= 0 {
+		return nil
+	}
 	nt := getNthread(rddsize, n_thread)
 	batchSize := rddsize / nt
 	var ochan chan OriginType = make(chan OriginType, nt)
@@ -130,6 +140,9 @@ type Partition_func func(Keytype) Keytype
 func (rdd Rdd) CombineByKey(ccombfunc CreateCombiner, mvalfunc MergeValue, mcombfunc MergeCombiners, pf Partition_func) Rdd {
 	// map version
 	rddsize := rdd.Count()
+	if rddsize <= 0 {
+		return rdd
+	}
 	nt := getNthread(rddsize, n_thread)
 	batchSize := rddsize / nt
 	var ochan chan maptype = make(chan maptype, nt)

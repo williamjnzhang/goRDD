@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	a := []string{"a,b,c", "d,e,f,g"}
-	// a := []string{}
+	a := []string{}
 	originrdd := BuildRddNThread(a, 10)
 	fmf := func(row RddRow) SliceArray {
 		s := row.(string)
