@@ -14,8 +14,8 @@ func (rdd Rdd) Aggregate(zeroval CombinedType, sOp SeqOp, cOp CombOp) CombinedTy
 	if rddsize <= 0 {
 		return zeroval
 	}
-	nt := getNthread(rddsize, n_thread)
-	batchSize := rddsize / nt
+	nt, batchSize := getNthread(rddsize, n_thread)
+	// batchSize := rddsize / nt
 	var ochan chan CombinedType = make(chan CombinedType, nt)
 	defer close(ochan)
 	begin := 0
@@ -101,8 +101,8 @@ func (rdd Rdd) Reduce(rf Reduce_func) OriginType {
 	if rddsize <= 0 {
 		return nil
 	}
-	nt := getNthread(rddsize, n_thread)
-	batchSize := rddsize / nt
+	nt, batchSize := getNthread(rddsize, n_thread)
+	// batchSize := rddsize / nt
 	var ochan chan OriginType = make(chan OriginType, nt)
 	defer close(ochan)
 	begin := 0
@@ -143,8 +143,8 @@ func (rdd Rdd) CombineByKey(ccombfunc CreateCombiner, mvalfunc MergeValue, mcomb
 	if rddsize <= 0 {
 		return rdd
 	}
-	nt := getNthread(rddsize, n_thread)
-	batchSize := rddsize / nt
+	nt, batchSize := getNthread(rddsize, n_thread)
+	// batchSize := rddsize / nt
 	var ochan chan maptype = make(chan maptype, nt)
 	defer close(ochan)
 	begin := 0

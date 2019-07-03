@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"bytes"
 	"sync"
+	"math"
 )
 
 type RddRow interface{}
@@ -22,17 +23,17 @@ const (
 	min_parallel_size = 10
 )
 
-func getNthread(rddsize, n_thread int) int {
+func getNthread(rddsize, n_thread int) (int, int) {
 	batchSize := rddsize / n_thread
 	if batchSize < min_parallel_size {
 		batchSize = min_parallel_size
 	}
 	
-	ret := rddsize / batchSize
+	ret := int(math.Ceil(float64(rddsize) / float64(batchSize)))
 	if ret < 1 {
 		ret = 1
 	}
-	return ret
+	return ret, batchSize
 }
 
 func BuildRdd(data interface{}) Rdd {
@@ -99,8 +100,8 @@ func (rdd Rdd) Map(mf Map_func) Rdd {
 		return rdd
 	}
 	newRdd := make(Rdd, rddsize, rddsize)
-	nt := getNthread(rddsize, n_thread)
-	batchSize := rddsize / nt
+	_, batchSize := getNthread(rddsize, n_thread)
+	// batchSize := rddsize / nt
 	var wg sync.WaitGroup
 	begin := 0
 	for begin < rddsize {
@@ -128,8 +129,8 @@ func (rdd Rdd) Filter(ff Filter_func) Rdd {
 	if rddsize <= 0 {
 		return rdd
 	}
-	nt := getNthread(rddsize, n_thread)
-	batchSize := rddsize / nt
+	nt, batchSize := getNthread(rddsize, n_thread)
+	// batchSize := rddsize / nt
 	var rddchan chan Rdd = make(chan Rdd, nt)
 	defer close(rddchan)
 	begin := 0
@@ -168,8 +169,8 @@ func (rdd Rdd) FlatMap(ff FlatMap_func) Rdd {
 	if rddsize <= 0 {
 		return rdd
 	}
-	nt := getNthread(rddsize, n_thread)
-	batchSize := rddsize / nt
+	nt, batchSize := getNthread(rddsize, n_thread)
+	// batchSize := rddsize / nt
 	var ochan chan Rdd = make(chan Rdd, nt)
 	defer close(ochan)
 	begin := 0
